@@ -1,9 +1,9 @@
 name: Publish package to GitHub Packages
 on: 
   push:
-    branches: [ "multistage" ]
+    branches: [ "multistage1" ]
   pull_request:
-    branches: [ "multistage" ]
+    branches: [ "multistage1" ]
 jobs:
   publish:
     runs-on: ubuntu-latest 
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v3
         with:
-          ref: multistage
+          ref: multistage1
       - uses: actions/setup-java@v3
         with:
           java-version: '11'
