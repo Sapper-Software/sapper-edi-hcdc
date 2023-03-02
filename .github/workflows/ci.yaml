@@ -45,3 +45,27 @@ jobs:
         # working-directory: 
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+
+      - name: Shell to copy jar
+        run: | 
+          cp ./build/libs/change-manager-1.4-SNAPSHOT.jar .
+          ls -lrt
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+  
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+  
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: sapperedi
+          IMAGE_TAG: change-manager-1.4-SNAPSHOT.jar
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
