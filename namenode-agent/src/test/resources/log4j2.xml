@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+    <!-- Logging Properties -->
+    <Properties>
+        <Property name="LOG_PATTERN">[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t][%c] - %msg%n</Property>
+        <Property name="LOGDIR">/home/subhagho/work/temp/logs/hcdc</Property>
+        <Property name="AGENT">HadoopCDC-${sys:AGENT_NAME}</Property>
+    </Properties>
+
+    <Appenders>
+
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- File Appenders on need basis -->
+        <RollingFile name="services" fileName="${LOGDIR}/${AGENT}.log"
+                     filePattern="${LOGDIR}/${AGENT}-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+
+        <RollingFile name="audit" fileName="${LOGDIR}/audit.log"
+                     filePattern="${LOGDIR}/audit-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="%msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100"/>
+        </RollingFile>
+
+    </Appenders>
+
+    <Loggers>
+        <Logger name="ai.sapper.cdc.common.audit" additivity="false" level="info">
+            <AppenderRef ref="audit"/>
+        </Logger>
+        <Logger name="org.eclipse.jetty" additivity="false" level="warn">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.apache.parquet" additivity="false" level="warn">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.apache.kafka" additivity="false" level="warn">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.apache.zookeeper" additivity="false" level="warn">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="ai.sapper" additivity="false" level="debug">
+            <AppenderRef ref="services"/>
+        </Logger>
+        <Root level="debug">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

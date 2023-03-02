@@ -1,0 +1,190 @@
+syntax = "proto2";
+
+package ai_sapper_hcdc_common_model;
+
+option java_multiple_files = true;
+option java_package = "ai.sapper.hcdc.common.model";
+option java_outer_classname = "DFSBlockProto";
+
+message DFSTransaction {
+  enum Operation {
+    ADD_FILE = 0;
+    ADD_BLOCK = 1;
+    CLOSE = 2;
+    RENAME = 3;
+    CONCAT_DELETE = 4;
+    UPDATE_BLOCKS = 5;
+    DELETE = 6;
+    APPEND = 7;
+    TRUNCATE = 8;
+    IGNORE = 9;
+    ERROR = 10;
+  }
+  required int64 transactionId = 1;
+  required Operation op = 2;
+  required uint64 timestamp = 3;
+}
+
+message DFSSchemaEntity {
+  required string domain = 1;
+  required string entity = 2;
+  optional int32 group = 3;
+}
+
+message DFSFile {
+  required DFSSchemaEntity entity = 1;
+  required int64 inodeId = 2;
+  optional string fileType = 3;
+  optional string schemaLocation = 4;
+}
+
+message DFSBlock {
+  required int64 blockId = 1;
+  required int64 size = 2;
+  required int64 blockSize = 3;
+  required int64 generationStamp = 4;
+  required int64 startOffset = 5;
+  required int64 endOffset = 6;
+  optional int64 deltaSize = 7;
+  optional bool  deleted = 8;
+}
+
+message DFSFileAdd {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  required uint64 length = 3;
+  required uint64 blockSize = 4;
+  required uint64 modifiedTime = 5;
+  required uint64 accessedTime = 6;
+  repeated DFSBlock blocks = 7;
+  optional bool overwrite = 8;
+}
+
+message DFSFileAppend {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  optional bool newBlock = 3;
+}
+
+message DFSFileDelete {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  required uint64 timestamp = 3;
+}
+
+message DFSBlockAdd {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  optional DFSBlock penultimateBlock = 3;
+  required DFSBlock lastBlock = 4;
+}
+
+message DFSBlockUpdate {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  repeated DFSBlock blocks = 3;
+}
+
+message DFSBlockTruncate {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  required DFSBlock block = 3;
+  required uint64 newLength = 4;
+}
+
+message DFSFileClose {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  required uint64 length = 3;
+  required uint64 blockSize = 4;
+  required uint64 modifiedTime = 5;
+  required uint64 accessedTime = 6;
+  repeated DFSBlock blocks = 7;
+  optional bool overwrite = 8;
+}
+
+message DFSFileRename {
+  enum RenameOpts {
+    NONE = 0;
+    OVERWRITE = 1;
+    TO_TRASH = 2;
+  }
+  required DFSTransaction transaction = 1;
+  required DFSFile srcFile = 2;
+  required DFSFile destFile = 3;
+  required uint64 length = 4;
+  optional RenameOpts opts = 5;
+}
+
+message DFSIgnoreTx {
+  required DFSTransaction transaction = 1;
+  required string opCode = 2;
+  optional DFSFile file = 3;
+}
+
+message DFSError {
+  enum ErrorCode {
+    SYNC_STOPPED = 0;
+    FATAL = 1;
+  }
+  required DFSTransaction transaction = 1;
+  required ErrorCode code = 2;
+  required string message = 3;
+  optional DFSFile file = 4;
+}
+
+message DFSChangeData {
+  enum FileSystemCode {
+    LOCAL = 0;
+    S3 = 1;
+  }
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  required string domain = 3;
+  required string entityName = 4;
+  required FileSystemCode fileSystem = 5;
+  map<string, string> outputPath = 6;
+}
+
+message DFSSchemaChange {
+  required DFSTransaction transaction = 1;
+  required DFSFile file = 2;
+  required int32 op = 4;
+  optional string currentSchemaPath = 5;
+  required string updatedSchemaPath = 6;
+}
+
+message DFSAdminMessage {
+  enum AdminMessageType {
+    PAUSE = 0;
+    RESUME = 1;
+    DELETE = 2;
+  }
+  required AdminMessageType type = 1;
+  required DFSSchemaEntity entity = 2;
+}
+
+message DFSChangeDelta {
+  required string txId = 2;
+  required int64 sequence = 3;
+  required DFSSchemaEntity entity = 4;
+  required string type = 5;
+  required uint64 timestamp = 6;
+  oneof change {
+    DFSSchemaChange schemaChange = 8;
+    DFSChangeData dataChange = 9;
+    DFSFileAdd fileAdd = 10;
+    DFSFileAppend fileAppend = 11;
+    DFSFileClose fileClose = 12;
+    DFSFileDelete fileDelete = 13;
+    DFSFileRename fileRename = 14;
+    DFSBlockAdd blockAdd = 15;
+    DFSBlockUpdate blockUpdate = 16;
+    DFSBlockTruncate blockTruncate = 17;
+    DFSIgnoreTx ignore = 18;
+    DFSError error = 19;
+    DFSAdminMessage admin = 20;
+  }
+  optional DFSSchemaEntity target = 7;
+}
+

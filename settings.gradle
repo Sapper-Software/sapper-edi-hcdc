@@ -1,0 +1,8 @@
+rootProject.name = 'change-manager'
+include 'common'
+include 'core'
+include 'services'
+include 'namenode-agent'
+include 'hcdc-common'
+include 'hbase-sep'
+

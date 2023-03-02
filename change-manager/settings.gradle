@@ -1,6 +1,0 @@
-rootProject.name = 'change-manager'
-include 'common'
-include 'core'
-include 'services'
-include 'namenode-agent'
-

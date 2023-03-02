@@ -1,0 +1,8 @@
+test-domain-1;DATA;/test/hcdc/loader/parquet/data;(.*)
+test;links;/test/hcdc/loader/parquet/links;(.*/*)(.*\.parquet)
+test;movies;/test/hcdc/loader/parquet/movies;(.*/*)(.*\.parquet)
+test;tags;/test/hcdc/loader/parquet/tags;(.*/*)(.*\.parquet)
+test;links;/test/hcdc/loader/avro/links;(.*/*)(.*\.avro)
+test;movies;/test/hcdc/loader/avro/movies;(.*/*)(.*\.avro)
+test;tags;/test/hcdc/loader/avro/tags;(.*/*)(.*\.avro)
+test-domain-2;test-02;/test/hcdc/core;(.*/*)(.*\.xml);default
