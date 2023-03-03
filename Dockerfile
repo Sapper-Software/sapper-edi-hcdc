@@ -15,6 +15,6 @@
 
 FROM adoptopenjdk/openjdk11:alpine-jre
 EXPOSE 80
-ARG JAR_FILE=change-manager-1.4-SNAPSHOT.jar
+ARG JAR_FILE=./build/libs/change-manager-1.4-SNAPSHOT.jar
 ADD ${JAR_FILE} app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
