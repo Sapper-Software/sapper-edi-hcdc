@@ -46,11 +46,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 
-      - name: Shell to copy jar
-        run: | 
-          cp ./build/libs/change-manager-1.4-SNAPSHOT.jar .
-          ls -lrt
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
