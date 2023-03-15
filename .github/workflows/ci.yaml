@@ -35,7 +35,7 @@ jobs:
         run: |
               cd ./change-manager
               mv * .. 
-              rm -r ./change-manager
+              rm -r ../change-manager
 
       - uses: actions/setup-java@v3
         with:
