@@ -1,0 +1,72 @@
+name: Publish package to GitHub Packages
+on: 
+  push:
+    branches: [ "ci-test" ]
+  pull_request:
+    branches: [ "ci-test" ]
+jobs:
+  publish:
+    runs-on: ubuntu-latest 
+    # defaults:
+    #   run:
+    #     working-directory: ./change-manager
+    permissions: 
+      contents: read
+      packages: write 
+    steps:
+      # - name: Checkout branch
+      #   uses: actions/checkout@v3
+      #   with:
+      #     ref: multistage1
+
+      - name: Checkout files
+        uses: Bhacaz/checkout-files@v2
+        with:
+        files: change-manager
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 7.5.1
+      - name: Graddle wrapper
+        run: gradle wrapper --gradle-version 7.5.1 
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: copy properties file
+        run: cp ./gradle.properties ~/.gradle/
+      - name: Debug
+        run: |
+              pwd
+              ls -larth
+      - name: Publish package
+        # working-directory: ./change-manager
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: publish
+          # gradle-executable: ./change-manager/gradle/wrapper/gradle-wrapper.properties
+        # working-directory: 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+  
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+  
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: sapperedi
+          IMAGE_TAG: change-manager-1.4-SNAPSHOT.jar
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
