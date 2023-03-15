@@ -23,10 +23,15 @@ jobs:
       #   uses: Bhacaz/checkout-files@v2
       #   with:
       #     files: change-manager
-      - uses: sergeidyga/checkout-dirs@v1
-        with:
-          dirs: 'change-manager'
+      # - uses: sergeidyga/checkout-dirs@v1
+      #   with:
+      #     dirs: 'change-manager'
 
+      - uses: move files to root 
+        run: |
+              cd ./change-manager
+              mv * .. 
+              rm -r ./change-manager
 
       - uses: actions/setup-java@v3
         with:
