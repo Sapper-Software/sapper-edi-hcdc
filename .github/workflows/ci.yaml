@@ -22,7 +22,7 @@ jobs:
       - name: Checkout files
         uses: Bhacaz/checkout-files@v2
         with:
-        files: change-manager
+          files: change-manager
 
       - uses: actions/setup-java@v3
         with:
