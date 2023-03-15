@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id "io.freefair.lombok" version "6.4.3"
+    id "io.freefair.lombok" version "6.5.1"
     id 'java-library'
     id 'maven-publish'
     id 'signing'
@@ -27,37 +27,56 @@ configurations.all {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId = "ai.sapper.cdc"
-            from components.java
 
-            pom {
-                name = 'HCDC Change Manager'
-                description = 'Hadoop Change Data capture framework'
-                url = 'https://sapper.ai'
-
-                licenses {
-                    license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'subhagho'
-                        name = 'Subho Ghosh'
-                        email = 'subho.ghosh@outlook.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git@github.com:subhagho/hcdc.git'
-                    developerConnection = 'scm:git:git@github.com:subhagho/hcdc.git'
-                    url = 'https://sapper.ai'
-                }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/Sapper-Software/sapper-edi-hcdc"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
+
+
+
+    // publications {
+    //     mavenJava(MavenPublication) {
+    //         groupId = "ai.sapper.cdc"
+    //         from components.java
+
+    //         pom {
+    //             name = 'HCDC Change Manager'
+    //             description = 'Hadoop Change Data capture framework'
+    //             url = 'https://sapper.ai'
+
+    //             licenses {
+    //                 license {
+    //                     name = 'The Apache License, Version 2.0'
+    //                     url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+    //                 }
+    //             }
+    //             developers {
+    //                 developer {
+    //                     id = 'subhagho'
+    //                     name = 'Subho Ghosh'
+    //                     email = 'subho.ghosh@outlook.com'
+    //                 }
+    //             }
+    //             scm {
+    //                 connection = 'scm:git:git@github.com:subhagho/hcdc.git'
+    //                 developerConnection = 'scm:git:git@github.com:subhagho/hcdc.git'
+    //                 url = 'https://sapper.ai'
+    //             }
+    //         }
+    //     }
+    // }
 
 }
 
@@ -87,21 +106,42 @@ subprojects {
     }
 
     publishing {
-        publications {
-            "$project.name"(MavenPublication) {
-                groupId = project.group
-                artifactId = project.name
-                version = project.version
-                from components.java
-            }
-        }
+
         repositories {
             maven {
-                def releasesRepoUrl = layout.buildDirectory.dir(repoDirRelease)
-                def snapshotsRepoUrl = layout.buildDirectory.dir(repoDirSnapshot)
-                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                name = "GitHubPackages"
+                url = "https://maven.pkg.github.com/Sapper-Software/sapper-edi-hcdc"
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+            // maven {
+            //     def releasesRepoUrl = layout.buildDirectory.dir(repoDirRelease)
+            //     def snapshotsRepoUrl = layout.buildDirectory.dir(repoDirSnapshot)
+            //     url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            // }
+        }
+        publications {
+            gpr(MavenPublication) {
+                from(components.java)
             }
         }
+        // publications {
+        //     "$project.name"(MavenPublication) {
+        //         groupId = project.group
+        //         artifactId = project.name
+        //         version = project.version
+        //         from components.java
+        //     }
+        // }
+        // repositories {
+        //     maven {
+        //         def releasesRepoUrl = layout.buildDirectory.dir(repoDirRelease)
+        //         def snapshotsRepoUrl = layout.buildDirectory.dir(repoDirSnapshot)
+        //         url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        //     }
+        // }
     }
 
     configurations.all {
