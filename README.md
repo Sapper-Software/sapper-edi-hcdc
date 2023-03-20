@@ -1,2 +1,2 @@
 # hcdc
-Hadoop Change Data capture framework 
+Hadoop Change Data capture framework .
