@@ -40,7 +40,7 @@ publishing {
             url = "https://maven.pkg.github.com/Sapper-Software/sapper-edi-hcdc"
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+                password = System.getenv("PACKAGE_TOKEN")
             }
         }
     }
@@ -110,7 +110,7 @@ subprojects {
                 password = System.getenv("PACKAGE_TOKEN")
             }
         }
-        // if(!System.getenv("GITHUB_TOKEN")){
+        // if(!System.getenv("PACKAGE_TOKEN")){
         //     maven {
         //         url layout.buildDirectory.dir(repoDirSnapshot)
         //         mavenContent {
@@ -129,7 +129,7 @@ subprojects {
                 url = "https://maven.pkg.github.com/Sapper-Software/sapper-edi-hcdc"
                 credentials {
                     username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
+                    password = System.getenv("PACKAGE_TOKEN")
                 }
             }
             // maven {
