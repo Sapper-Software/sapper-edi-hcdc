@@ -110,14 +110,14 @@ subprojects {
                 password = System.getenv("PACKAGE_TOKEN")
             }
         }
-        if(!System.getenv("GITHUB_TOKEN")){
-            maven {
-                url layout.buildDirectory.dir(repoDirSnapshot)
-                mavenContent {
-                    snapshotsOnly()
-                }
-            }
-        }
+        // if(!System.getenv("GITHUB_TOKEN")){
+        //     maven {
+        //         url layout.buildDirectory.dir(repoDirSnapshot)
+        //         mavenContent {
+        //             snapshotsOnly()
+        //         }
+        //     }
+        // }
     }
 
     publishing {
