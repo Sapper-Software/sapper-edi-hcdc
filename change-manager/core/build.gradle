@@ -1,7 +1,14 @@
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.name == 'curator-recipes') {
+            details.useTarget 'org.apache.curator:curator-recipes:5.4.0'
+        }
+    }
+}
 
 dependencies {
     implementation project(':common')
-    implementation 'ai.sapper.cdc.framework:entity:1.2-SNAPSHOT'
+    //implementation 'ai.sapper.cdc.framework:entity:1.2-SNAPSHOT'
 
     implementation 'org.apache.avro:avro:1.11.0'
     // https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-hdfs-client
