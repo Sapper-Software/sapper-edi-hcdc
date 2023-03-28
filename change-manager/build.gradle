@@ -15,6 +15,14 @@ repositories {
             password = System.getenv("GITHUB_TOKEN")
         }
     }
+    if (!System.getenv("GITHUB_TOKEN")) {
+        maven {
+            url layout.buildDirectory.dir(repoDirSnapshot)
+            mavenContent {
+                snapshotsOnly()
+            }
+        }
+    }
 }
 
 group 'ai.sapper.cdc'
@@ -74,6 +82,14 @@ subprojects {
             credentials {
                 username = "cdc-debezium-reader"
                 password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+        if (!System.getenv("GITHUB_TOKEN")) {
+            maven {
+                url layout.buildDirectory.dir(repoDirSnapshot)
+                mavenContent {
+                    snapshotsOnly()
+                }
             }
         }
     }
