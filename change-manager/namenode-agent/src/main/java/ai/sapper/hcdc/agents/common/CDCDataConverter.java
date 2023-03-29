@@ -1,7 +1,6 @@
 package ai.sapper.hcdc.agents.common;
 
 import ai.sapper.cdc.common.model.AvroChangeType;
-import ai.sapper.cdc.common.schema.AvroSchema;
 import ai.sapper.cdc.common.schema.SchemaEntity;
 import ai.sapper.cdc.common.schema.SchemaVersion;
 import ai.sapper.cdc.common.utils.PathUtils;
@@ -9,9 +8,12 @@ import ai.sapper.cdc.core.connections.hadoop.HdfsConnection;
 import ai.sapper.cdc.core.io.EncryptionHandler;
 import ai.sapper.cdc.core.io.PathInfo;
 import ai.sapper.cdc.core.io.impl.CDCFileSystem;
+import ai.sapper.cdc.core.model.BaseTxId;
 import ai.sapper.cdc.core.model.EFileType;
 import ai.sapper.cdc.core.model.HDFSBlockData;
-import ai.sapper.cdc.core.schema.SchemaManager;
+import ai.sapper.cdc.entity.avro.AvroEntitySchema;
+import ai.sapper.cdc.entity.model.DbSource;
+import ai.sapper.cdc.entity.schema.SchemaManager;
 import ai.sapper.hcdc.agents.common.converter.AvroConverter;
 import ai.sapper.hcdc.agents.common.converter.ParquetConverter;
 import ai.sapper.hcdc.agents.model.DFSBlockState;
@@ -33,11 +35,17 @@ import java.nio.ByteBuffer;
 @Getter
 @Accessors(fluent = true)
 public class CDCDataConverter {
-    private final FormatConverter[] CONVERTERS = {new ParquetConverter(), new AvroConverter()};
+    private FormatConverter[] CONVERTERS;
 
     private CDCFileSystem fs;
     private HdfsConnection hdfsConnection;
     private EncryptionHandler<ByteBuffer, ByteBuffer> encryptionHandler;
+
+    public CDCDataConverter(@NonNull DbSource source) {
+        CONVERTERS = new FormatConverter[2];
+        CONVERTERS[0] = new AvroConverter(source);
+        CONVERTERS[1] = new ParquetConverter(source);
+    }
 
     public CDCDataConverter withFileSystem(@NonNull CDCFileSystem fs) {
         this.fs = fs;
@@ -76,7 +84,7 @@ public class CDCDataConverter {
                                       @NonNull DFSFileReplicaState replicaState,
                                       @NonNull AvroChangeType.EChangeType op,
                                       long startTxId,
-                                      long currentTxId) throws IOException {
+                                      @NonNull BaseTxId currentTxId) throws IOException {
         Preconditions.checkNotNull(fs);
         Preconditions.checkArgument(replicaState.getEntity() != null);
         Preconditions.checkArgument(replicaState.getStoragePath() != null);
@@ -121,7 +129,7 @@ public class CDCDataConverter {
                                 data.data().array(),
                                 (int) data.dataSize())) {
                             EFileType fileType = converter.fileType();
-                            AvroSchema schema = converter.extractSchema(reader,
+                            AvroEntitySchema schema = (AvroEntitySchema) converter.extractSchema(reader,
                                     fileState, schemaEntity);
                             if (schema != null) {
                                 ExtractSchemaResponse response = new ExtractSchemaResponse();
@@ -149,14 +157,15 @@ public class CDCDataConverter {
     private PathInfo upload(File source,
                             DFSFileState fileState,
                             DFSFileReplicaState replicaState,
-                            long txId) throws Exception {
+                            BaseTxId txId) throws Exception {
         Preconditions.checkNotNull(fs);
 
-        String uploadPath = String.format("%s/%s/%d/%d",
+        String uploadPath = String.format("%s/%s/%d/%d/%d",
                 replicaState.getEntity().getDomain(),
                 replicaState.getEntity().getEntity(),
                 replicaState.getFileInfo().getInodeId(),
-                txId);
+                txId.getId(),
+                txId.getSequence());
         PathInfo path = fs.get(uploadPath, replicaState.getEntity().getDomain());
         fs.mkdirs(path);
 
@@ -167,7 +176,7 @@ public class CDCDataConverter {
                                              DFSFileState fileState,
                                              DFSFileReplicaState replicaState,
                                              long startTxId,
-                                             long currentTxId,
+                                             BaseTxId currentTxId,
                                              @NonNull AvroChangeType.EChangeType op) throws Exception {
         File source = null;
         if (converter.supportsPartial()) {
@@ -180,13 +189,24 @@ public class CDCDataConverter {
         }
         String fname = FilenameUtils.getName(replicaState.getFileInfo().getHdfsPath());
         fname = FilenameUtils.removeExtension(fname);
-        String path = PathUtils.formatPath(String.format("%s/%s-%d.avro", fs.tempPath(), fname, currentTxId));
-        return converter.convert(source, new File(path), fileState, replicaState.getEntity(), currentTxId, op);
+        String path = PathUtils.formatPath(String.format("%s/%s-%d-%d.proto",
+                fs.tempPath(),
+                fname,
+                currentTxId.getId(),
+                currentTxId.getSequence()));
+        return converter.convert(source,
+                new File(path),
+                fileState,
+                replicaState.getEntity(),
+                op,
+                currentTxId,
+                !replicaState.isSnapshotReady());
+
     }
 
     private File createSourceFile(DFSFileState fileState,
                                   DFSFileReplicaState replicaState,
-                                  long currentTxId) throws Exception {
+                                  BaseTxId currentTxId) throws Exception {
         PathInfo source = fs.get(replicaState.getStoragePath());
         if (!source.exists()) {
             throw new IOException(String.format("Change Set not found. [path=%s]", source.toString()));
@@ -200,7 +220,7 @@ public class CDCDataConverter {
                 replicaState,
                 file,
                 -1,
-                currentTxId)) {
+                currentTxId.getId())) {
             return null;
         }
         return file;
@@ -209,7 +229,7 @@ public class CDCDataConverter {
     private File createDeltaFile(DFSFileState fileState,
                                  DFSFileReplicaState replicaState,
                                  long startTxId,
-                                 long currentTxId) throws Exception {
+                                 BaseTxId currentTxId) throws Exception {
         PathInfo source = fs.get(replicaState.getStoragePath());
         if (!source.exists()) {
             throw new IOException(String.format("Change Set not found. [path=%s]", source.toString()));
@@ -223,7 +243,7 @@ public class CDCDataConverter {
                 replicaState,
                 file,
                 startTxId,
-                currentTxId)) {
+                currentTxId.getId())) {
             return null;
         }
         return file;

@@ -8,7 +8,6 @@ import ai.sapper.cdc.common.utils.ReflectionUtils;
 import ai.sapper.cdc.core.connections.ConnectionManager;
 import ai.sapper.cdc.core.keystore.KeyStore;
 import ai.sapper.cdc.core.model.ModuleInstance;
-import ai.sapper.cdc.core.schema.SchemaManager;
 import ai.sapper.cdc.core.utils.DistributedLockBuilder;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -21,6 +20,7 @@ import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
+import javax.ws.rs.NotFoundException;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -165,6 +165,18 @@ public abstract class BaseEnv<T extends Enum<?>> {
         return createLock(stateManager.zkPath(), module(), name);
     }
 
+    public void validate(@NonNull String key,
+                         @NonNull String value) throws Exception {
+        Preconditions.checkNotNull(keyStore);
+        String v = keyStore.read(key);
+        if (Strings.isNullOrEmpty(v)) {
+            throw new NotFoundException(String.format("Key not found: [key=%s]", key));
+        }
+        if (v.compareTo(value) != 0) {
+            throw new SecurityException(String.format("Invalid secret: [key=%s]", key));
+        }
+    }
+
     public void setup(@NonNull String module,
                       @NonNull String connectionsConfigPath) throws ConfigurationException {
         try {
@@ -247,7 +259,6 @@ public abstract class BaseEnv<T extends Enum<?>> {
         return moduleInstance.getSource();
     }
 
-    public abstract <S extends SchemaManager> S schemaManager(@NonNull Class<? extends SchemaManager> type) throws Exception;
 
     private static final Map<String, BaseEnv<?>> __instances = new LinkedHashMap<>();
     private static final ReentrantLock __instanceLock = new ReentrantLock();
