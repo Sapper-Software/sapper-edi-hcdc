@@ -3,5 +3,5 @@ include 'common'
 include 'core'
 include 'services'
 include 'namenode-agent'
-include 'hcdc-common'
+// include 'hcdc-common'
 

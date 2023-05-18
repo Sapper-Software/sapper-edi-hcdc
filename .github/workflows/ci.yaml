@@ -1,9 +1,9 @@
 name: Publish package to GitHub Packages
 on: 
   push:
-    branches: [ "1.4-SNAPSHOT" ]
+    branches: [ "ci" ]
   pull_request:
-    branches: [ "1.4-SNAPSHOT" ]
+    branches: [ "ci" ]
 jobs:
   publish:
     runs-on: ubuntu-latest 
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v3
         with:
-          ref: 1.4-SNAPSHOT
+          ref: ci
 
       # - name: Checkout files
       #   uses: Bhacaz/checkout-files@v2
