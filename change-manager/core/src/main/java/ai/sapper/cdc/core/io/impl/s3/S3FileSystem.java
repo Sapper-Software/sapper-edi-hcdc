@@ -7,6 +7,7 @@ import ai.sapper.cdc.core.io.Reader;
 import ai.sapper.cdc.core.io.Writer;
 import ai.sapper.cdc.core.io.impl.CDCFileSystem;
 import ai.sapper.cdc.core.io.impl.local.LocalFileSystem;
+import ai.sapper.cdc.core.keystore.KeyStore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.AccessLevel;
@@ -68,12 +69,14 @@ public class S3FileSystem extends LocalFileSystem {
      * @throws IOException
      */
     @Override
-    public CDCFileSystem init(@NonNull HierarchicalConfiguration<ImmutableNode> config, String pathPrefix) throws IOException {
+    public CDCFileSystem init(@NonNull HierarchicalConfiguration<ImmutableNode> config,
+                              @NonNull String pathPrefix,
+                              KeyStore keyStore) throws IOException {
         try {
             S3FileSystemConfig cfg = new S3FileSystemConfig(config, pathPrefix);
             cfg.read();
             fsConfig(cfg);
-            super.init(config, pathPrefix);
+            super.init(config, pathPrefix, keyStore);
 
             this.defaultBucket = cfg.defaultBucket;
             if (cfg.mappings != null) {

@@ -3,7 +3,9 @@ package ai.sapper.cdc.core.keystore;
 import ai.sapper.cdc.common.utils.ChecksumUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -14,6 +16,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Enumeration;
+
 
 public class JavaKeyStore extends KeyStore {
     public static final String CONFIG_KEYSTORE_FILE = "path";
@@ -66,6 +69,17 @@ public class JavaKeyStore extends KeyStore {
         }
     }
 
+    public File filePath(@NonNull String key) throws Exception {
+        if (!authenticate(key)) {
+            throw new Exception("Authentication failed...");
+        }
+        File file = new File(keyStoreFile);
+        if (file.exists()) {
+            return file;
+        }
+        throw new Exception("KeyStore file not found.");
+    }
+
     private void createEmptyStore(String path, String password) throws Exception {
         store = java.security.KeyStore.getInstance(keyStoreType);
         store.load(null, password.toCharArray());
@@ -74,6 +88,8 @@ public class JavaKeyStore extends KeyStore {
         try (FileOutputStream fos = new FileOutputStream(path)) {
             store.store(fos, password.toCharArray());
         }
+        save(DEFAULT_KEY, password);
+        flush(password);
     }
 
     @Override
@@ -82,7 +98,8 @@ public class JavaKeyStore extends KeyStore {
                      @NonNull String password) throws Exception {
         Preconditions.checkNotNull(store);
         String hash = ChecksumUtils.generateHash(password);
-        Preconditions.checkArgument(hash.equals(passwdHash));
+        if (!Strings.isNullOrEmpty(passwdHash))
+            Preconditions.checkArgument(hash.equals(passwdHash));
         java.security.KeyStore.SecretKeyEntry secret
                 = new java.security.KeyStore.SecretKeyEntry(generate(value, cipherAlgo));
         java.security.KeyStore.ProtectionParameter parameter
