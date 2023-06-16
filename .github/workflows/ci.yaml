@@ -61,7 +61,6 @@ jobs:
         with:
           arguments: |
             publish
-            bootJar
             -x test
           # gradle-executable: ./change-manager/gradle/wrapper/gradle-wrapper.properties
         # working-directory: 
