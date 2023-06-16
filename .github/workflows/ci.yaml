@@ -6,6 +6,7 @@ on:
     branches: [ "1.4-SNAPSHOT" ]
 jobs:
   publish:
+    if: ${{ github.ref == 'refs/heads/1.4-SNAPSHOT' }}
     runs-on: ubuntu-latest 
     # defaults:
     #   run:
@@ -58,7 +59,9 @@ jobs:
         # working-directory: ./change-manager
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: publish
+          arguments: |
+            publish
+            bootJar
           # gradle-executable: ./change-manager/gradle/wrapper/gradle-wrapper.properties
         # working-directory: 
         env:
