@@ -181,7 +181,6 @@ subprojects {
     }
 
     test {
-        exclude '**/*'
         useJUnitPlatform()
     }
 
